@@ -6,3 +6,5 @@ server:
 
 jwt:
   secret-key: q3t6w9y$B&E)H@McQfTjWnZr4u7x!A%C*F-JaNdRgUkXp2s5v8y/B?E(G+KbPeSh
+  token-prefix: Bearer
+  expiration-days: 2

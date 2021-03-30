@@ -2,6 +2,7 @@ package com.training.springbootsecurity.security;
 
 import com.training.springbootsecurity.auth.ApplicationUserService;
 import com.training.springbootsecurity.jwt.JwtAuthenticationFilter;
+import com.training.springbootsecurity.jwt.JwtConfig;
 import com.training.springbootsecurity.jwt.JwtTokenVerifier;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -14,6 +15,9 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import javax.crypto.SecretKey;
+
+import static com.training.springbootsecurity.security.ApplicationUserRole.ADMIN;
 import static com.training.springbootsecurity.security.ApplicationUserRole.USER;
 
 @Configuration
@@ -23,6 +27,8 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
   private final PasswordEncoder passwordEncoder;
   private final ApplicationUserService applicationUserService;
+  private final SecretKey secretKey;
+  private final JwtConfig jwtConfig;
 
   @Override
   protected void configure(HttpSecurity http) throws Exception {
@@ -31,11 +37,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
             .sessionManagement()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
-            .addFilter(new JwtAuthenticationFilter(authenticationManager()))
-            .addFilterAfter(new JwtTokenVerifier(), JwtAuthenticationFilter.class)
+            .addFilter(new JwtAuthenticationFilter(authenticationManager(), jwtConfig, secretKey))
+            .addFilterAfter(new JwtTokenVerifier(secretKey, jwtConfig), JwtAuthenticationFilter.class)
             .authorizeRequests()
             .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
-            .antMatchers("/api/**").hasRole(USER.name())
+            .antMatchers("/api/**").hasAnyRole(USER.name(), ADMIN.name())
             .anyRequest()
             .authenticated();
   }
